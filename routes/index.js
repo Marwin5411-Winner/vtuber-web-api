@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const sD = require("../modules/storeData");
 const gD = require("../modules/getData");
-const ytInfo = require("../modules/getYtInfo");
 const { processData } = require("../jobs/panigationData");
 
 /* GET home page. */
