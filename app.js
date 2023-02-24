@@ -5,6 +5,8 @@ var logger = require('morgan');
 var {google} = require('googleapis');
 const cors = require('cors');
 require('dotenv').config();
+require('./cron');
+
 
 
 global.yt = google.youtube({
