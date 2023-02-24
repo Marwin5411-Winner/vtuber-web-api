@@ -21,8 +21,20 @@ const ytrefactoredData = (arr) => {
     };
   });
 };
+
+const videoFactoredData = (arr) => {
+  return arr.map((item) => {
+    return {
+      channel_id: item.snippet.videoOwnerChannelId,
+      lastest_video_id: item.contentDetails.videoId,
+      lastest_videoTitle: item.snippet.title,
+    };
+  });
+};
 function getYTInfo(row) {
   // your logic to retrieve data from YouTube API
+  const sql =
+    "REPLACE INTO channels (`id`, `description`, `published_at`, `subscribers`, `thumbnail_icon_url`, `title`, `uploads`, `videos`, `views`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
   let ids = row.map((result) => result.id);
   global.yt.channels.list(
     {
@@ -35,14 +47,13 @@ function getYTInfo(row) {
         //res.status(500).send(err);
         return;
       }
-      var channels = ytrefactoredData(response.data.items);
+      let channels = ytrefactoredData(response.data.items);
       if (channels.length == 0) {
         console.log("No channel found.");
       } else {
         console.log(channels);
-        for (var i = 0; i < channels.length; i++) {
-          const sql = "REPLACE INTO channels (`id`, `description`, `published_at`, `subscribers`, `thumbnail_icon_url`, `title`, `uploads`, `videos`, `views`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-          const values = [
+        for (let i = 0; i < channels.length; i++) {
+          let sqlvalues = [
             channels[i].channel_id,
             channels[i].description,
             channels[i].published_at,
@@ -53,17 +64,41 @@ function getYTInfo(row) {
             channels[i].videos,
             channels[i].views,
           ];
-          con.query(sql, values, function (err) {
+          con.query(sql, sqlvalues, function (err) {
             if (err) {
               console.error(err);
               return;
             }
           });
+          let playlistId = channels[i].uploads;
+          const videoSql = "UPDATE channels SET lastest_video = ? ,lastest_videoTitle = ? WHERE id = ?;";
+          global.yt.playlistItems
+            .list({
+              part: ["snippet,contentDetails"],
+              maxResults: 1,
+              playlistId: playlistId,
+            })
+            .then((response) => {
+              let video = videoFactoredData(response.data.items);
+
+              let videoValues = [
+                video[0].lastest_video_id,
+                video[0].lastest_videoTitle,
+                video[0].channel_id,
+              ];
+              con.query(videoSql, videoValues, function (err) {
+                console.log(err);
+              });
+            })
+            .catch((e) => {
+             console.log("error: " + JSON.stringify(e));
+            });
         }
       }
     }
   );
 }
+
 function processData(offset = 0) {
   con.query(
     `SELECT * FROM channelList LIMIT ?, ?`,
@@ -84,6 +119,5 @@ function processData(offset = 0) {
     }
   );
 }
-
 
 module.exports = { processData };
