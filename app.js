@@ -33,6 +33,9 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 app.use((req, res, next) => {
+  //get ip address of client
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log(ip);
   res.status(404).send(
       "<h1>หึ้ยๆมาทำอะไรรตรงงนี้ ดวงตาวิเศษเห็นนะ อิอิ จะมาแฮ็กเว็ปเราหรออ want to hack my website? hehehe</h1>")
 })
