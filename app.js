@@ -32,4 +32,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+app.use((req, res, next) => {
+  res.status(404).send(
+      "<h1>หึ้ยๆมาทำอะไรรตรงงนี้ ดวงตาวิเศษเห็นนะ อิอิ จะมาแฮ็กเว็ปเราหรออ want to hack my website? hehehe</h1>")
+})
+
 module.exports = app;
